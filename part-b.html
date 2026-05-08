@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Part B — TMDB Actor Analysis</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #0f172a; color: #f1f5f9; font-family: 'Inter', sans-serif; }
+    .badge { display: inline-flex; align-items: center; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.025em; }
+    .card-hover { transition: transform 0.2s ease, border-color 0.2s ease; }
+    .card-hover:hover { transform: translateY(-2px); }
+    code { font-family: 'JetBrains Mono', monospace; font-size: 0.8em; background: rgba(30,41,59,0.8); padding: 0.1em 0.4em; border-radius: 4px; color: #22d3ee; }
+    .bar { transition: width 0.6s ease; }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-800">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <a href="index.html" class="font-semibold text-cyan-400 text-sm tracking-wide cursor-pointer flex items-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="3" fill="currentColor"/>
+          <circle cx="4" cy="6" r="2" fill="currentColor" opacity="0.6"/>
+          <circle cx="20" cy="6" r="2" fill="currentColor" opacity="0.6"/>
+          <circle cx="4" cy="18" r="2" fill="currentColor" opacity="0.6"/>
+          <circle cx="20" cy="18" r="2" fill="currentColor" opacity="0.6"/>
+          <line x1="12" y1="9" x2="4" y2="7" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
+          <line x1="12" y1="9" x2="20" y2="7" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
+          <line x1="12" y1="15" x2="4" y2="17" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
+          <line x1="12" y1="15" x2="20" y2="17" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
+        </svg>
+        Actor Network
+      </a>
+      <div class="flex gap-6">
+        <a href="index.html" class="text-slate-400 hover:text-white text-sm transition-colors cursor-pointer">Home</a>
+        <a href="part-a.html" class="text-slate-400 hover:text-white text-sm transition-colors cursor-pointer">Part A</a>
+        <a href="part-b.html" class="text-slate-200 hover:text-white text-sm transition-colors cursor-pointer font-medium">Part B</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="pt-32 pb-16 px-6 bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/20 border-b border-slate-800">
+    <div class="max-w-4xl mx-auto">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="badge bg-amber-500/10 text-amber-400 border border-amber-500/20">Assignment B</span>
+        <span class="text-slate-600 text-sm">Network Structure &amp; Community Language</span>
+      </div>
+      <h1 class="text-4xl md:text-5xl font-bold mb-5 leading-tight">
+        Community Detection &amp;<br/><span class="text-amber-400">Language Profiling</span>
+      </h1>
+      <p class="text-lg text-slate-400 max-w-3xl leading-relaxed mb-6">
+        Extending Part A with deeper analysis: weighted centrality ranking, Louvain community detection with modularity diagnostics, community-level TF-IDF language profiling, and interpretation of genre specialization patterns.
+      </p>
+      <a href="ProjectAssignmentB.ipynb" class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-amber-400 transition-colors cursor-pointer">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        View ProjectAssignmentB.ipynb
+      </a>
+    </div>
+  </section>
+
+  <!-- What's New -->
+  <section class="py-16 px-6 border-b border-slate-800/60">
+    <div class="max-w-4xl mx-auto">
+      <span class="badge bg-slate-800 text-slate-400 border border-slate-700 mb-5">What's New in Part B</span>
+      <div class="grid sm:grid-cols-3 gap-5">
+        <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-5">
+          <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-3">
+            <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          </div>
+          <p class="font-semibold text-sm mb-1.5">Weighted Centrality</p>
+          <p class="text-slate-500 text-xs leading-relaxed">Degree, strength, closeness, betweenness, and eigenvector centrality computed on the weighted GCC.</p>
+        </div>
+        <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-5">
+          <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-3">
+            <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+          </div>
+          <p class="font-semibold text-sm mb-1.5">Louvain Communities</p>
+          <p class="text-slate-500 text-xs leading-relaxed">Full Louvain partition with modularity score, community sizes, and per-community top actor rankings.</p>
+        </div>
+        <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-5">
+          <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-3">
+            <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
+          </div>
+          <p class="font-semibold text-sm mb-1.5">TF-IDF Language Profiles</p>
+          <p class="text-slate-500 text-xs leading-relaxed">Community-level TF-IDF using scikit-learn to surface distinctive vocabulary per actor cluster.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dataset Validation -->
+  <section class="py-16 px-6 border-b border-slate-800/60">
+    <div class="max-w-4xl mx-auto">
+      <span class="badge bg-slate-800 text-slate-400 border border-slate-700 mb-5">01 — Validation</span>
+      <h2 class="text-2xl font-bold mb-3">Dataset Sanity Check</h2>
+      <p class="text-slate-400 leading-relaxed mb-8">
+        Before analysis, all three tables are validated for required columns, null values, and duplicate rows. The sanity check runs automatically on every notebook execution.
+      </p>
+      <div class="bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden mb-6">
+        <div class="px-5 py-3.5 border-b border-slate-700 flex items-center justify-between">
+          <p class="text-sm font-semibold text-slate-200">Sanity Check Results</p>
+          <span class="badge bg-green-500/10 text-green-400 border border-green-500/20">All Passed</span>
+        </div>
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-slate-500 text-xs font-mono uppercase tracking-wider border-b border-slate-700/50">
+              <th class="text-left px-5 py-3">Table</th>
+              <th class="text-right px-5 py-3">Rows</th>
+              <th class="text-right px-5 py-3">Columns</th>
+              <th class="text-right px-5 py-3">Null Cells</th>
+              <th class="text-right px-5 py-3">Duplicates</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-slate-700/30 hover:bg-slate-700/20 transition-colors">
+              <td class="px-5 py-3.5"><code>actor_movie</code></td>
+              <td class="px-5 py-3.5 text-right font-mono text-slate-300">1,797</td>
+              <td class="px-5 py-3.5 text-right font-mono text-slate-300">4</td>
+              <td class="px-5 py-3.5 text-right font-mono text-green-400">0</td>
+              <td class="px-5 py-3.5 text-right font-mono text-green-400">0</td>
+            </tr>
+            <tr class="border-b border-slate-700/30 hover:bg-slate-700/20 transition-colors">
+              <td class="px-5 py-3.5"><code>actors</code></td>
+              <td class="px-5 py-3.5 text-right font-mono text-slate-300">1,392</td>
+              <td class="px-5 py-3.5 text-right font-mono text-slate-300">5</td>
+              <td class="px-5 py-3.5 text-right font-mono text-green-400">0</td>
+              <td class="px-5 py-3.5 text-right font-mono text-green-400">0</td>
+            </tr>
+            <tr class="hover:bg-slate-700/20 transition-colors">
+              <td class="px-5 py-3.5"><code>movies</code></td>
+              <td class="px-5 py-3.5 text-right font-mono text-slate-300">200</td>
+              <td class="px-5 py-3.5 text-right font-mono text-slate-300">9</td>
+              <td class="px-5 py-3.5 text-right font-mono text-green-400">0</td>
+              <td class="px-5 py-3.5 text-right font-mono text-green-400">0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- Genre distribution -->
+      <div class="bg-slate-800/40 border border-slate-700/60 rounded-xl p-6">
+        <p class="text-xs font-mono uppercase tracking-widest text-slate-500 mb-5">Genre Distribution Across 200 Films</p>
+        <div class="space-y-2.5" aria-label="Genre distribution bar chart">
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-slate-400 w-28 text-right">Action</span>
+            <div class="flex-1 bg-slate-700/30 rounded-full h-3.5 overflow-hidden">
+              <div class="h-3.5 bg-amber-500/80 rounded-full bar" style="width:62%"></div>
+            </div>
+            <span class="text-xs text-slate-500 font-mono w-10">~62%</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-slate-400 w-28 text-right">Adventure</span>
+            <div class="flex-1 bg-slate-700/30 rounded-full h-3.5 overflow-hidden">
+              <div class="h-3.5 bg-amber-500/80 rounded-full bar" style="width:55%"></div>
+            </div>
+            <span class="text-xs text-slate-500 font-mono w-10">~55%</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-slate-400 w-28 text-right">Drama</span>
+            <div class="flex-1 bg-slate-700/30 rounded-full h-3.5 overflow-hidden">
+              <div class="h-3.5 bg-cyan-500/80 rounded-full bar" style="width:48%"></div>
+            </div>
+            <span class="text-xs text-slate-500 font-mono w-10">~48%</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-slate-400 w-28 text-right">Sci-Fi</span>
+            <div class="flex-1 bg-slate-700/30 rounded-full h-3.5 overflow-hidden">
+              <div class="h-3.5 bg-cyan-500/80 rounded-full bar" style="width:35%"></div>
+            </div>
+            <span class="text-xs text-slate-500 font-mono w-10">~35%</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-slate-400 w-28 text-right">Comedy</span>
+            <div class="flex-1 bg-slate-700/30 rounded-full h-3.5 overflow-hidden">
+              <div class="h-3.5 bg-indigo-500/80 rounded-full bar" style="width:30%"></div>
+            </div>
+            <span class="text-xs text-slate-500 font-mono w-10">~30%</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-slate-400 w-28 text-right">Animation</span>
+            <div class="flex-1 bg-slate-700/30 rounded-full h-3.5 overflow-hidden">
+              <div class="h-3.5 bg-indigo-500/80 rounded-full bar" style="width:22%"></div>
+            </div>
+            <span class="text-xs text-slate-500 font-mono w-10">~22%</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-slate-400 w-28 text-right">Thriller</span>
+            <div class="flex-1 bg-slate-700/30 rounded-full h-3.5 overflow-hidden">
+              <div class="h-3.5 bg-indigo-500/80 rounded-full bar" style="width:18%"></div>
+            </div>
+            <span class="text-xs text-slate-500 font-mono w-10">~18%</span>
+          </div>
+        </div>
+        <p class="text-xs text-slate-600 mt-4">Films span multiple genres. Popularity-sorted collection over-represents Action/Adventure blockbusters — a known limitation of the TMDB popularity signal.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Network Metrics -->
+  <section class="py-16 px-6 border-b border-slate-800/60">
+    <div class="max-w-4xl mx-auto">
+      <span class="badge bg-slate-800 text-slate-400 border border-slate-700 mb-5">02 — Network Metrics</span>
+      <h2 class="text-2xl font-bold mb-3">Structural Network Analysis</h2>
+      <p class="text-slate-400 leading-relaxed mb-8">
+        Part B runs a comprehensive set of structural diagnostics on the full actor graph and its Giant Connected Component (GCC). These metrics characterize the collaboration landscape.
+      </p>
+      <div class="grid sm:grid-cols-2 gap-6">
+        <!-- Metrics table -->
+        <div class="bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden">
+          <div class="px-5 py-3.5 border-b border-slate-700">
+            <p class="text-sm font-semibold text-slate-200">Network Structural Metrics</p>
+          </div>
+          <div class="divide-y divide-slate-700/30">
+            <div class="px-5 py-3 flex justify-between items-center">
+              <span class="text-sm text-slate-400">Nodes</span>
+              <span class="font-mono font-semibold text-cyan-400">1,392</span>
+            </div>
+            <div class="px-5 py-3 flex justify-between items-center">
+              <span class="text-sm text-slate-400">Edges</span>
+              <span class="font-mono font-semibold text-cyan-400">6,820</span>
+            </div>
+            <div class="px-5 py-3 flex justify-between items-center">
+              <span class="text-sm text-slate-400">Density</span>
+              <span class="font-mono text-slate-300">~0.007</span>
+            </div>
+            <div class="px-5 py-3 flex justify-between items-center">
+              <span class="text-sm text-slate-400">GCC nodes</span>
+              <span class="font-mono text-slate-300">majority</span>
+            </div>
+            <div class="px-5 py-3 flex justify-between items-center">
+              <span class="text-sm text-slate-400">Avg. clustering (w)</span>
+              <span class="font-mono text-slate-300">moderate</span>
+            </div>
+            <div class="px-5 py-3 flex justify-between items-center">
+              <span class="text-sm text-slate-400">Degree assort.</span>
+              <span class="font-mono text-slate-300">computed</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interpretation -->
+        <div class="space-y-4">
+          <div class="bg-slate-800/40 border border-slate-700/60 rounded-xl p-5">
+            <p class="text-sm font-semibold text-slate-200 mb-2">Sparse but Connected</p>
+            <p class="text-xs text-slate-500 leading-relaxed">Density of ~0.007 means only 0.7% of all possible actor pairs are connected — typical for large collaboration networks where most actors work in different productions.</p>
+          </div>
+          <div class="bg-slate-800/40 border border-slate-700/60 rounded-xl p-5">
+            <p class="text-sm font-semibold text-slate-200 mb-2">Heavy-Tail Degree Distribution</p>
+            <p class="text-xs text-slate-500 leading-relaxed">The right-skewed distribution is consistent with qualitative heavy-tail behavior. A small number of prolific actors (hubs) have dramatically more connections than the median, though a formal power-law fit was not computed.</p>
+          </div>
+          <div class="bg-slate-800/40 border border-slate-700/60 rounded-xl p-5">
+            <p class="text-sm font-semibold text-slate-200 mb-2">Assortativity</p>
+            <p class="text-xs text-slate-500 leading-relaxed">Degree assortativity measures whether high-degree actors tend to connect with other high-degree actors. In Hollywood, prolific actors often appear together in ensemble films.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Centrality -->
+  <section class="py-16 px-6 border-b border-slate-800/60">
+    <div class="max-w-4xl mx-auto">
+      <span class="badge bg-slate-800 text-slate-400 border border-slate-700 mb-5">03 — Centrality</span>
+      <h2 class="text-2xl font-bold mb-3">Actor Centrality Analysis</h2>
+      <p class="text-slate-400 leading-relaxed mb-8">
+        Five centrality metrics are computed on the GCC to capture different dimensions of actor importance in the collaboration network. Together they identify both hubs and bridge actors.
+      </p>
+
+      <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+        <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-5 card-hover">
+          <p class="text-amber-400 font-mono text-xs uppercase tracking-widest mb-2">Degree</p>
+          <p class="font-semibold text-sm mb-2">Number of Connections</p>
+          <p class="text-slate-500 text-xs leading-relaxed">Raw count of distinct co-stars. Captures prolific actors who appear in many films alongside many different people.</p>
+        </div>
+        <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-5 card-hover">
+          <p class="text-amber-400 font-mono text-xs uppercase tracking-widest mb-2">Strength</p>
+          <p class="font-semibold text-sm mb-2">Weighted Degree</p>
+          <p class="text-slate-500 text-xs leading-relaxed">Sum of edge weights. Identifies actors with strong recurring partnerships — repeat collaborators in franchise films.</p>
+        </div>
+        <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-5 card-hover">
+          <p class="text-amber-400 font-mono text-xs uppercase tracking-widest mb-2">Closeness</p>
+          <p class="font-semibold text-sm mb-2">Network Reachability</p>
+          <p class="text-slate-500 text-xs leading-relaxed">How quickly an actor can "reach" any other actor through short paths. High closeness = well-positioned in the network.</p>
+        </div>
+        <div class="bg-slate-800/50 border border-cyan-500/20 rounded-xl p-5 card-hover bg-cyan-500/5">
+          <p class="text-cyan-400 font-mono text-xs uppercase tracking-widest mb-2">Betweenness</p>
+          <p class="font-semibold text-sm mb-2">Bridge Actor Score</p>
+          <p class="text-slate-500 text-xs leading-relaxed">Fraction of shortest paths that pass through an actor. <strong class="text-slate-200">High betweenness = bridge actor</strong> connecting otherwise separate communities.</p>
+        </div>
+        <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-5 card-hover">
+          <p class="text-amber-400 font-mono text-xs uppercase tracking-widest mb-2">Eigenvector</p>
+          <p class="font-semibold text-sm mb-2">Influence Score</p>
+          <p class="text-slate-500 text-xs leading-relaxed">Centrality based on the importance of neighbors. An actor connected to other highly central actors scores highest.</p>
+        </div>
+      </div>
+
+      <!-- Sample actors from the dataset -->
+      <div class="bg-slate-800/40 border border-slate-700/60 rounded-xl p-6">
+        <p class="text-xs font-mono uppercase tracking-widest text-slate-500 mb-4">Sample Actors from Dataset (Partial — see notebook for full rankings)</p>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm min-w-md">
+            <thead>
+              <tr class="text-slate-500 text-xs font-mono uppercase tracking-wider border-b border-slate-700/50">
+                <th class="text-left py-2.5 pr-4">Actor</th>
+                <th class="text-left py-2.5 pr-4">Known For</th>
+                <th class="text-right py-2.5 pr-4">Gender</th>
+                <th class="text-right py-2.5">Dept.</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-slate-700/20 hover:bg-slate-700/20 transition-colors">
+                <td class="py-3 pr-4 font-medium text-slate-200">Sam Worthington</td>
+                <td class="py-3 pr-4 text-slate-400">Avatar franchise</td>
+                <td class="py-3 pr-4 text-right font-mono text-slate-400">M</td>
+                <td class="py-3 text-right font-mono text-slate-400">Acting</td>
+              </tr>
+              <tr class="border-b border-slate-700/20 hover:bg-slate-700/20 transition-colors">
+                <td class="py-3 pr-4 font-medium text-slate-200">Zoe Saldaña</td>
+                <td class="py-3 pr-4 text-slate-400">Avatar, Guardians</td>
+                <td class="py-3 pr-4 text-right font-mono text-slate-400">F</td>
+                <td class="py-3 text-right font-mono text-slate-400">Acting</td>
+              </tr>
+              <tr class="hover:bg-slate-700/20 transition-colors">
+                <td class="py-3 pr-4 font-medium text-slate-200">Sigourney Weaver</td>
+                <td class="py-3 pr-4 text-slate-400">Avatar franchise</td>
+                <td class="py-3 pr-4 text-right font-mono text-slate-400">F</td>
+                <td class="py-3 text-right font-mono text-slate-400">Acting</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-xs text-slate-600 mt-3">Full centrality rankings with all five metrics are computed and exported to <code>outputs/table_top_central_actors_b.csv</code> in the notebook.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Community Detection -->
+  <section class="py-16 px-6 border-b border-slate-800/60">
+    <div class="max-w-4xl mx-auto">
+      <span class="badge bg-slate-800 text-slate-400 border border-slate-700 mb-5">04 — Communities</span>
+      <h2 class="text-2xl font-bold mb-3">Louvain Community Detection</h2>
+      <p class="text-slate-400 leading-relaxed mb-8">
+        The Louvain algorithm is applied to the weighted GCC. It maximizes network modularity — a measure of how well-defined the community structure is compared to a random graph. Higher modularity indicates clearer separation between clusters.
+      </p>
+
+      <div class="grid sm:grid-cols-2 gap-6 mb-8">
+        <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+          <p class="text-xs font-mono uppercase tracking-widest text-slate-500 mb-4">Algorithm Details</p>
+          <div class="space-y-3 text-sm">
+            <div class="flex gap-3">
+              <span class="text-amber-400 font-mono font-bold flex-shrink-0">→</span>
+              <p class="text-slate-400">Run on the <strong class="text-slate-200">Giant Connected Component</strong> (GCC) only</p>
+            </div>
+            <div class="flex gap-3">
+              <span class="text-amber-400 font-mono font-bold flex-shrink-0">→</span>
+              <p class="text-slate-400">Edge <strong class="text-slate-200">weights used</strong> in modularity optimization</p>
+            </div>
+            <div class="flex gap-3">
+              <span class="text-amber-400 font-mono font-bold flex-shrink-0">→</span>
+              <p class="text-slate-400">Fixed random seed (<code>42</code>) for reproducibility</p>
+            </div>
+            <div class="flex gap-3">
+              <span class="text-amber-400 font-mono font-bold flex-shrink-0">→</span>
+              <p class="text-slate-400">Output: partition map <code>actor_id → community_id</code></p>
+            </div>
+            <div class="flex gap-3">
+              <span class="text-amber-400 font-mono font-bold flex-shrink-0">→</span>
+              <p class="text-slate-400">Modularity score computed to validate structure quality</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Community sizes visualization -->
+        <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+          <p class="text-xs font-mono uppercase tracking-widest text-slate-500 mb-4">Expected Community Structure</p>
+          <div class="space-y-3">
+            <div>
+              <div class="flex justify-between text-xs mb-1.5">
+                <span class="text-slate-400 font-medium">Largest community</span>
+                <span class="text-amber-400 font-mono">most actors</span>
+              </div>
+              <div class="bg-slate-700/30 rounded-full h-3 overflow-hidden">
+                <div class="h-3 bg-amber-500/80 rounded-full" style="width:72%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1.5">
+                <span class="text-slate-400 font-medium">2nd community</span>
+                <span class="text-amber-400 font-mono">moderate</span>
+              </div>
+              <div class="bg-slate-700/30 rounded-full h-3 overflow-hidden">
+                <div class="h-3 bg-amber-500/60 rounded-full" style="width:50%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1.5">
+                <span class="text-slate-400 font-medium">3rd community</span>
+                <span class="text-amber-400 font-mono">smaller</span>
+              </div>
+              <div class="bg-slate-700/30 rounded-full h-3 overflow-hidden">
+                <div class="h-3 bg-indigo-500/70 rounded-full" style="width:32%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1.5">
+                <span class="text-slate-400 font-medium">4th community</span>
+                <span class="text-amber-400 font-mono">smaller</span>
+              </div>
+              <div class="bg-slate-700/30 rounded-full h-3 overflow-hidden">
+                <div class="h-3 bg-indigo-500/50 rounded-full" style="width:22%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1.5">
+                <span class="text-slate-400 font-medium">Remaining communities</span>
+                <span class="text-slate-500 font-mono">various</span>
+              </div>
+              <div class="bg-slate-700/30 rounded-full h-3 overflow-hidden">
+                <div class="h-3 bg-slate-500/50 rounded-full" style="width:14%"></div>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-slate-600 mt-4">Actual community sizes and modularity score are in the notebook output — <code>table_community_sizes_b.csv</code>.</p>
+        </div>
+      </div>
+
+      <!-- Community visual SVG -->
+      <div class="bg-gradient-to-b from-slate-800/30 to-transparent border border-slate-700/60 rounded-2xl p-6 flex justify-center" aria-hidden="true">
+        <svg viewBox="0 0 400 220" class="w-full max-w-lg" xmlns="http://www.w3.org/2000/svg">
+          <!-- Community halos -->
+          <ellipse cx="100" cy="110" rx="70" ry="60" fill="#818cf8" opacity="0.06" stroke="#818cf8" stroke-width="0.5" stroke-dasharray="4,4" opacity="0.3"/>
+          <ellipse cx="300" cy="110" rx="70" ry="60" fill="#fbbf24" opacity="0.06" stroke="#fbbf24" stroke-width="0.5" stroke-dasharray="4,4" opacity="0.3"/>
+          <!-- Intra-community edges -->
+          <line x1="75" y1="85" x2="125" y2="90" stroke="#818cf8" stroke-width="0.8" opacity="0.4"/>
+          <line x1="80" y1="135" x2="125" y2="90" stroke="#818cf8" stroke-width="0.8" opacity="0.4"/>
+          <line x1="75" y1="85" x2="80" y2="135" stroke="#818cf8" stroke-width="0.5" opacity="0.3"/>
+          <line x1="60" y1="110" x2="75" y2="85" stroke="#818cf8" stroke-width="0.5" opacity="0.25"/>
+          <line x1="60" y1="110" x2="80" y2="135" stroke="#818cf8" stroke-width="0.5" opacity="0.25"/>
+          <line x1="125" y1="90" x2="130" y2="130" stroke="#818cf8" stroke-width="0.5" opacity="0.3"/>
+          <line x1="280" y1="85" x2="320" y2="90" stroke="#fbbf24" stroke-width="0.8" opacity="0.4"/>
+          <line x1="280" y1="130" x2="320" y2="90" stroke="#fbbf24" stroke-width="0.8" opacity="0.4"/>
+          <line x1="280" y1="85" x2="280" y2="130" stroke="#fbbf24" stroke-width="0.5" opacity="0.3"/>
+          <line x1="340" y1="110" x2="320" y2="90" stroke="#fbbf24" stroke-width="0.5" opacity="0.25"/>
+          <line x1="340" y1="110" x2="280" y2="130" stroke="#fbbf24" stroke-width="0.5" opacity="0.25"/>
+          <line x1="320" y1="90" x2="315" y2="130" stroke="#fbbf24" stroke-width="0.5" opacity="0.3"/>
+          <!-- Bridge edges -->
+          <line x1="125" y1="90" x2="200" y2="110" stroke="#22d3ee" stroke-width="1.2" opacity="0.6" stroke-dasharray="5,3"/>
+          <line x1="130" y1="130" x2="200" y2="110" stroke="#22d3ee" stroke-width="1" opacity="0.4" stroke-dasharray="5,3"/>
+          <line x1="280" y1="85" x2="200" y2="110" stroke="#22d3ee" stroke-width="1.2" opacity="0.6" stroke-dasharray="5,3"/>
+          <line x1="280" y1="130" x2="200" y2="110" stroke="#22d3ee" stroke-width="1" opacity="0.4" stroke-dasharray="5,3"/>
+          <!-- Community nodes -->
+          <circle cx="75" cy="85" r="7" fill="#818cf8" opacity="0.85"/>
+          <circle cx="80" cy="135" r="7" fill="#818cf8" opacity="0.85"/>
+          <circle cx="125" cy="90" r="9" fill="#818cf8" opacity="0.9"/>
+          <circle cx="130" cy="130" r="6" fill="#818cf8" opacity="0.7"/>
+          <circle cx="60" cy="110" r="5" fill="#818cf8" opacity="0.6"/>
+          <circle cx="280" cy="85" r="7" fill="#fbbf24" opacity="0.85"/>
+          <circle cx="280" cy="130" r="7" fill="#fbbf24" opacity="0.85"/>
+          <circle cx="320" cy="90" r="9" fill="#fbbf24" opacity="0.9"/>
+          <circle cx="315" cy="130" r="6" fill="#fbbf24" opacity="0.7"/>
+          <circle cx="340" cy="110" r="5" fill="#fbbf24" opacity="0.6"/>
+          <!-- Bridge node -->
+          <circle cx="200" cy="110" r="20" fill="#22d3ee" opacity="0.08"/>
+          <circle cx="200" cy="110" r="12" fill="#22d3ee" opacity="0.9"/>
+          <!-- Labels -->
+          <text x="100" y="185" text-anchor="middle" fill="#818cf8" font-size="10" font-family="Inter,sans-serif" font-weight="500" opacity="0.8">Community A</text>
+          <text x="300" y="185" text-anchor="middle" fill="#fbbf24" font-size="10" font-family="Inter,sans-serif" font-weight="500" opacity="0.8">Community B</text>
+          <text x="200" y="135" text-anchor="middle" fill="#22d3ee" font-size="9" font-family="Inter,sans-serif" font-weight="600" opacity="0.9">bridge actor</text>
+          <text x="200" y="60" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="Inter,sans-serif" opacity="0.6">high betweenness centrality</text>
+          <line x1="200" y1="65" x2="200" y2="95" stroke="#94a3b8" stroke-width="0.8" opacity="0.3" marker-end="url(#arrow)"/>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- TF-IDF Language Profiles -->
+  <section class="py-16 px-6 border-b border-slate-800/60">
+    <div class="max-w-4xl mx-auto">
+      <span class="badge bg-slate-800 text-slate-400 border border-slate-700 mb-5">05 — Language</span>
+      <h2 class="text-2xl font-bold mb-3">Community Language Profiling</h2>
+      <p class="text-slate-400 leading-relaxed mb-8">
+        After mapping actors to Louvain communities, movie plot summaries are aggregated per community into a single corpus document. TF-IDF is then used to identify terms that are both frequent <em>and</em> distinctive for each community.
+      </p>
+
+      <!-- TF-IDF explanation -->
+      <div class="bg-slate-800/40 border border-slate-700/60 rounded-xl p-6 mb-8">
+        <p class="text-xs font-mono uppercase tracking-widest text-slate-500 mb-4">How TF-IDF Works Here</p>
+        <div class="grid sm:grid-cols-3 gap-5">
+          <div class="text-center">
+            <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mx-auto mb-3">
+              <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            </div>
+            <p class="text-sm font-semibold mb-1">Aggregate</p>
+            <p class="text-xs text-slate-500">Concatenate all movie overviews for each community into one document</p>
+          </div>
+          <div class="text-center">
+            <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto mb-3">
+              <svg class="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+            </div>
+            <p class="text-sm font-semibold mb-1">Vectorize</p>
+            <p class="text-xs text-slate-500">Apply scikit-learn's TF-IDF vectorizer with English stopwords removed</p>
+          </div>
+          <div class="text-center">
+            <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mx-auto mb-3">
+              <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            </div>
+            <p class="text-sm font-semibold mb-1">Rank Terms</p>
+            <p class="text-xs text-slate-500">Top-15 terms per community by TF-IDF score reveal distinctive themes</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Illustrative community language profiles -->
+      <p class="text-xs font-mono uppercase tracking-widest text-slate-500 mb-5">Illustrative Language Profiles by Community Type</p>
+      <div class="grid sm:grid-cols-2 gap-5">
+        <!-- Action/adventure community -->
+        <div class="bg-slate-800/50 border border-amber-500/20 rounded-xl p-5">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-3 h-3 rounded-full bg-amber-400"></div>
+            <p class="text-sm font-semibold text-amber-300">Action / Adventure Community</p>
+          </div>
+          <div class="space-y-2">
+            <div class="flex items-center gap-2">
+              <div class="bg-slate-700/40 rounded h-5 flex-1 overflow-hidden">
+                <div class="h-5 bg-amber-500/60 rounded flex items-center px-2" style="width:88%">
+                  <span class="text-xs text-amber-200 font-mono">mission</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="bg-slate-700/40 rounded h-5 flex-1 overflow-hidden">
+                <div class="h-5 bg-amber-500/60 rounded flex items-center px-2" style="width:78%">
+                  <span class="text-xs text-amber-200 font-mono">battle</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="bg-slate-700/40 rounded h-5 flex-1 overflow-hidden">
+                <div class="h-5 bg-amber-500/50 rounded flex items-center px-2" style="width:68%">
+                  <span class="text-xs text-amber-200 font-mono">forces</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="bg-slate-700/40 rounded h-5 flex-1 overflow-hidden">
+                <div class="h-5 bg-amber-500/50 rounded flex items-center px-2" style="width:60%">
+                  <span class="text-xs text-amber-200 font-mono">planet</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="bg-slate-700/40 rounded h-5 flex-1 overflow-hidden">
+                <div class="h-5 bg-amber-500/40 rounded flex items-center px-2" style="width:52%">
+                  <span class="text-xs text-amber-200 font-mono">enemy</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Drama/character community -->
+        <div class="bg-slate-800/50 border border-indigo-500/20 rounded-xl p-5">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-3 h-3 rounded-full bg-indigo-400"></div>
+            <p class="text-sm font-semibold text-indigo-300">Drama / Character-Driven Community</p>
+          </div>
+          <div class="space-y-2">
+            <div class="flex items-center gap-2">
+              <div class="bg-slate-700/40 rounded h-5 flex-1 overflow-hidden">
+                <div class="h-5 bg-indigo-500/60 rounded flex items-center px-2" style="width:85%">
+                  <span class="text-xs text-indigo-200 font-mono">discover</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="bg-slate-700/40 rounded h-5 flex-1 overflow-hidden">
+                <div class="h-5 bg-indigo-500/60 rounded flex items-center px-2" style="width:72%">
+                  <span class="text-xs text-indigo-200 font-mono">journey</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="bg-slate-700/40 rounded h-5 flex-1 overflow-hidden">
+                <div class="h-5 bg-indigo-500/50 rounded flex items-center px-2" style="width:63%">
+                  <span class="text-xs text-indigo-200 font-mono">relationship</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="bg-slate-700/40 rounded h-5 flex-1 overflow-hidden">
+                <div class="h-5 bg-indigo-500/50 rounded flex items-center px-2" style="width:55%">
+                  <span class="text-xs text-indigo-200 font-mono">secrets</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="bg-slate-700/40 rounded h-5 flex-1 overflow-hidden">
+                <div class="h-5 bg-indigo-500/40 rounded flex items-center px-2" style="width:44%">
+                  <span class="text-xs text-indigo-200 font-mono">past</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="text-xs text-slate-600 mt-4">Illustrative profiles based on typical genre vocabulary. Actual TF-IDF output per Louvain community is in <code>outputs/table_tfidf_terms_b.csv</code>.</p>
+    </div>
+  </section>
+
+  <!-- Discussion -->
+  <section class="py-16 px-6">
+    <div class="max-w-4xl mx-auto">
+      <span class="badge bg-slate-800 text-slate-400 border border-slate-700 mb-5">06 — Discussion</span>
+      <h2 class="text-2xl font-bold mb-8">Findings, Limitations &amp; Next Steps</h2>
+
+      <div class="space-y-6">
+        <!-- What worked -->
+        <div class="bg-slate-800/50 border border-green-500/20 rounded-xl p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-8 h-8 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center">
+              <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <p class="font-semibold text-green-300">What Worked</p>
+          </div>
+          <ul class="space-y-2 text-sm text-slate-400">
+            <li class="flex gap-2 items-start">
+              <span class="text-green-500 mt-0.5">·</span>
+              The weighted actor network is well-connected enough to support robust centrality and community analysis.
+            </li>
+            <li class="flex gap-2 items-start">
+              <span class="text-green-500 mt-0.5">·</span>
+              Louvain detection produced interpretable communities with a meaningful modularity signal above the random-graph baseline.
+            </li>
+            <li class="flex gap-2 items-start">
+              <span class="text-green-500 mt-0.5">·</span>
+              Community-level TF-IDF reveals vocabulary differences that support the genre specialization hypothesis.
+            </li>
+          </ul>
+        </div>
+
+        <!-- Limitations -->
+        <div class="bg-slate-800/50 border border-amber-500/20 rounded-xl p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+              <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            </div>
+            <p class="font-semibold text-amber-300">Known Limitations</p>
+          </div>
+          <ul class="space-y-2 text-sm text-slate-400">
+            <li class="flex gap-2 items-start">
+              <span class="text-amber-500 mt-0.5">·</span>
+              <strong class="text-slate-300">Popularity bias:</strong> TMDB popularity sampling over-represents mainstream blockbusters — niche or art-house film communities may be undersampled.
+            </li>
+            <li class="flex gap-2 items-start">
+              <span class="text-amber-500 mt-0.5">·</span>
+              <strong class="text-slate-300">Cast rank cutoff:</strong> Limiting to top-8 actors per film excludes supporting and character actors who may form distinct communities.
+            </li>
+            <li class="flex gap-2 items-start">
+              <span class="text-amber-500 mt-0.5">·</span>
+              <strong class="text-slate-300">Text duplication:</strong> Movies with actors in multiple communities contribute their overview text to all linked communities, diluting distinctiveness.
+            </li>
+            <li class="flex gap-2 items-start">
+              <span class="text-amber-500 mt-0.5">·</span>
+              <strong class="text-slate-300">No formal power-law test:</strong> Heavy-tail interpretation is qualitative; a rigorous goodness-of-fit test was not performed.
+            </li>
+          </ul>
+        </div>
+
+        <!-- Next steps -->
+        <div class="bg-slate-800/50 border border-indigo-500/20 rounded-xl p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
+              <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            </div>
+            <p class="font-semibold text-indigo-300">Potential Next Steps</p>
+          </div>
+          <ul class="space-y-2 text-sm text-slate-400">
+            <li class="flex gap-2 items-start">
+              <span class="text-indigo-400 mt-0.5">→</span>
+              Add temporal slices to test whether community structure and bridge actors are stable over 2010–2025.
+            </li>
+            <li class="flex gap-2 items-start">
+              <span class="text-indigo-400 mt-0.5">→</span>
+              Compare Louvain with an alternative algorithm (e.g., Girvan-Newman) and measure partition agreement.
+            </li>
+            <li class="flex gap-2 items-start">
+              <span class="text-indigo-400 mt-0.5">→</span>
+              Apply lemmatization and phrase detection to improve text distinctiveness in community language profiles.
+            </li>
+            <li class="flex gap-2 items-start">
+              <span class="text-indigo-400 mt-0.5">→</span>
+              Extend cast rank cutoff and test sensitivity of community structure to different k values.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Prev / Next -->
+  <div class="border-t border-slate-800 px-6 py-8">
+    <div class="max-w-4xl mx-auto flex justify-between items-center">
+      <a href="part-a.html" class="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors cursor-pointer">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        Back to Part A
+      </a>
+      <a href="index.html" class="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer font-semibold">
+        Back to Home
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800 py-10 px-6">
+    <div class="max-w-6xl mx-auto text-center text-slate-500 text-sm">
+      <p class="mb-2">Computational Social Science Project &nbsp;·&nbsp; 2026</p>
+      <p>Data provided by <a href="https://www.themoviedb.org/" target="_blank" rel="noopener" class="text-cyan-500 hover:text-cyan-400 transition-colors cursor-pointer">The Movie Database (TMDB)</a>.</p>
+      <p class="mt-1 italic text-slate-600">This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+    </div>
+  </footer>
+</body>
+</html>

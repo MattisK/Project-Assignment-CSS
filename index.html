@@ -1,13 +1,356 @@
 <!DOCTYPE html>
-<html>
-    <body>
-        <h1>Hello World</h1>
-        <p>GitHub Pages site, yay</p>
-        
-        <footer style="text-align: center; padding: 20px; margin-top: 50px; font-size: 0.8em; color: #666;">
-            <hr>
-            <p>Data provided by <a href="https://www.themoviedb.org/" target="_blank">The Movie Database (TMDB)</a>.</p>
-            <p><em>This product uses the TMDB API but is not endorsed or certified by TMDB.</em></p>
-        </footer>
-    </body>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TMDB Actor Community Analysis</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #0f172a; color: #f1f5f9; font-family: 'Inter', sans-serif; }
+    .gradient-text { background: linear-gradient(135deg, #22d3ee 0%, #818cf8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+    #networkCanvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .badge { display: inline-flex; align-items: center; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.025em; }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-800">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <a href="index.html" class="font-semibold text-cyan-400 text-sm tracking-wide cursor-pointer flex items-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="3" fill="currentColor"/>
+          <circle cx="4" cy="6" r="2" fill="currentColor" opacity="0.6"/>
+          <circle cx="20" cy="6" r="2" fill="currentColor" opacity="0.6"/>
+          <circle cx="4" cy="18" r="2" fill="currentColor" opacity="0.6"/>
+          <circle cx="20" cy="18" r="2" fill="currentColor" opacity="0.6"/>
+          <line x1="12" y1="9" x2="4" y2="7" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
+          <line x1="12" y1="9" x2="20" y2="7" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
+          <line x1="12" y1="15" x2="4" y2="17" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
+          <line x1="12" y1="15" x2="20" y2="17" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
+        </svg>
+        Actor Network
+      </a>
+      <div class="flex gap-6">
+        <a href="index.html" class="text-slate-300 hover:text-white text-sm transition-colors cursor-pointer font-medium">Home</a>
+        <a href="part-a.html" class="text-slate-400 hover:text-white text-sm transition-colors cursor-pointer">Part A</a>
+        <a href="part-b.html" class="text-slate-400 hover:text-white text-sm transition-colors cursor-pointer">Part B</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <canvas id="networkCanvas" aria-hidden="true"></canvas>
+    <div class="absolute inset-0 bg-gradient-to-b from-slate-900/60 via-transparent to-slate-900 pointer-events-none"></div>
+    <div class="relative z-10 max-w-4xl mx-auto px-6 text-center pt-16">
+      <div class="badge bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 mb-8 mx-auto">
+        <svg class="w-3 h-3 mr-1.5 flex-shrink-0" fill="currentColor" viewBox="0 0 8 8" aria-hidden="true"><circle cx="4" cy="4" r="3"/></svg>
+        Computational Social Science &nbsp;·&nbsp; 2026
+      </div>
+      <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight tracking-tight">
+        <span class="gradient-text">TMDB Actor</span><br/>
+        <span class="text-slate-100">Community Analysis</span>
+      </h1>
+      <p class="text-xl text-slate-400 mb-4 max-w-2xl mx-auto leading-relaxed">
+        Do communities of actors specialize in particular genres and themes — and who are the bridge actors that connect different production ecosystems?
+      </p>
+      <p class="text-sm text-slate-500 mb-12 font-mono">
+        TMDB API &nbsp;·&nbsp; NetworkX &nbsp;·&nbsp; Louvain Communities &nbsp;·&nbsp; TF-IDF
+      </p>
+      <div class="flex flex-wrap gap-4 justify-center">
+        <a href="part-a.html" class="px-7 py-3.5 bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold rounded-xl transition-colors cursor-pointer text-sm shadow-lg shadow-cyan-500/25">
+          Explore Part A
+        </a>
+        <a href="part-b.html" class="px-7 py-3.5 bg-slate-800/80 hover:bg-slate-700 text-slate-100 font-semibold rounded-xl border border-slate-700 hover:border-slate-600 transition-colors cursor-pointer text-sm">
+          Explore Part B
+        </a>
+        <a href="ProjectAssignmentA.ipynb" class="px-7 py-3.5 text-slate-400 hover:text-slate-200 font-medium rounded-xl transition-colors cursor-pointer text-sm flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          View Notebooks
+        </a>
+      </div>
+    </div>
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce" aria-hidden="true">
+      <svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <section class="py-20 px-6">
+    <div class="max-w-6xl mx-auto">
+      <p class="text-center text-slate-500 text-xs font-mono uppercase tracking-widest mb-8">Dataset at a glance</p>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 text-center card-hover">
+          <div class="text-4xl font-bold text-cyan-400 mb-1 tabular-nums">200</div>
+          <div class="text-slate-300 text-sm font-medium">Movies</div>
+          <div class="text-slate-500 text-xs mt-1.5">2010 – 2025</div>
+        </div>
+        <div class="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 text-center card-hover">
+          <div class="text-4xl font-bold text-cyan-400 mb-1 tabular-nums">1,392</div>
+          <div class="text-slate-300 text-sm font-medium">Actors</div>
+          <div class="text-slate-500 text-xs mt-1.5">top-8 cast per film</div>
+        </div>
+        <div class="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 text-center card-hover">
+          <div class="text-4xl font-bold text-amber-400 mb-1 tabular-nums">6,820</div>
+          <div class="text-slate-300 text-sm font-medium">Network Edges</div>
+          <div class="text-slate-500 text-xs mt-1.5">co-appearance links</div>
+        </div>
+        <div class="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 text-center card-hover">
+          <div class="text-4xl font-bold text-green-400 mb-1 tabular-nums">1,797</div>
+          <div class="text-slate-300 text-sm font-medium">Actor–Film Links</div>
+          <div class="text-slate-500 text-xs mt-1.5">many-to-many table</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section class="py-20 px-6 border-t border-slate-800/60">
+    <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+      <div>
+        <span class="badge bg-slate-800 text-slate-400 border border-slate-700 mb-5">About the Project</span>
+        <h2 class="text-3xl font-bold mb-5 leading-snug">Mapping the Hollywood Collaboration Network</h2>
+        <p class="text-slate-400 leading-relaxed mb-4">
+          Using the TMDB API, we collect popular films from 2010–2025, filtered by vote count and release window. From each movie's cast list we take the top eight credited actors.
+        </p>
+        <p class="text-slate-400 leading-relaxed mb-4">
+          An undirected, weighted graph is constructed where <span class="text-slate-200">nodes</span> are actors and <span class="text-slate-200">edge weights</span> count shared film appearances. Louvain community detection then partitions this graph into clusters of collaborating actors.
+        </p>
+        <p class="text-slate-400 leading-relaxed">
+          By linking each community to its movie plot summaries and running TF-IDF analysis, we test whether actor clusters also share thematic language — bridging network topology and natural language processing.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <span class="badge bg-slate-800 text-slate-300 border border-slate-700">Python 3.12</span>
+          <span class="badge bg-slate-800 text-slate-300 border border-slate-700">NetworkX</span>
+          <span class="badge bg-slate-800 text-slate-300 border border-slate-700">python-louvain</span>
+          <span class="badge bg-slate-800 text-slate-300 border border-slate-700">scikit-learn</span>
+          <span class="badge bg-slate-800 text-slate-300 border border-slate-700">pandas</span>
+        </div>
+      </div>
+
+      <!-- Static SVG network diagram -->
+      <div class="flex justify-center" aria-hidden="true">
+        <svg viewBox="0 0 320 280" class="w-full max-w-xs" xmlns="http://www.w3.org/2000/svg">
+          <!-- Community halos -->
+          <ellipse cx="90" cy="80" rx="52" ry="42" fill="#818cf8" opacity="0.07"/>
+          <ellipse cx="230" cy="80" rx="52" ry="42" fill="#818cf8" opacity="0.07"/>
+          <ellipse cx="80" cy="200" rx="52" ry="38" fill="#fbbf24" opacity="0.07"/>
+          <ellipse cx="235" cy="195" rx="52" ry="38" fill="#fbbf24" opacity="0.07"/>
+          <!-- Outer edges -->
+          <line x1="55" y1="60" x2="90" y2="80" stroke="#818cf8" stroke-width="1" opacity="0.35"/>
+          <line x1="120" y1="55" x2="90" y2="80" stroke="#818cf8" stroke-width="1" opacity="0.35"/>
+          <line x1="80" y1="108" x2="90" y2="80" stroke="#818cf8" stroke-width="0.8" opacity="0.3"/>
+          <line x1="200" y1="58" x2="230" y2="78" stroke="#818cf8" stroke-width="1" opacity="0.35"/>
+          <line x1="262" y1="58" x2="230" y2="78" stroke="#818cf8" stroke-width="1" opacity="0.35"/>
+          <line x1="245" y1="108" x2="230" y2="78" stroke="#818cf8" stroke-width="0.8" opacity="0.3"/>
+          <line x1="42" y1="195" x2="78" y2="200" stroke="#fbbf24" stroke-width="1" opacity="0.35"/>
+          <line x1="72" y1="232" x2="78" y2="200" stroke="#fbbf24" stroke-width="1" opacity="0.35"/>
+          <line x1="110" y1="228" x2="78" y2="200" stroke="#fbbf24" stroke-width="0.8" opacity="0.3"/>
+          <line x1="205" y1="228" x2="235" y2="198" stroke="#fbbf24" stroke-width="1" opacity="0.35"/>
+          <line x1="270" y1="218" x2="235" y2="198" stroke="#fbbf24" stroke-width="1" opacity="0.35"/>
+          <line x1="262" y1="175" x2="235" y2="198" stroke="#fbbf24" stroke-width="0.8" opacity="0.3"/>
+          <!-- Bridge edges (hub to communities) -->
+          <line x1="160" y1="140" x2="90" y2="80" stroke="#22d3ee" stroke-width="1.5" opacity="0.5"/>
+          <line x1="160" y1="140" x2="230" y2="78" stroke="#22d3ee" stroke-width="1.5" opacity="0.5"/>
+          <line x1="160" y1="140" x2="78" y2="200" stroke="#22d3ee" stroke-width="1.5" opacity="0.5"/>
+          <line x1="160" y1="140" x2="235" y2="198" stroke="#22d3ee" stroke-width="1.5" opacity="0.5"/>
+          <!-- Outer satellite nodes -->
+          <circle cx="55" cy="60" r="5" fill="#818cf8" opacity="0.75"/>
+          <circle cx="120" cy="55" r="5" fill="#818cf8" opacity="0.75"/>
+          <circle cx="80" cy="108" r="4" fill="#818cf8" opacity="0.6"/>
+          <circle cx="200" cy="58" r="5" fill="#818cf8" opacity="0.75"/>
+          <circle cx="262" cy="58" r="5" fill="#818cf8" opacity="0.75"/>
+          <circle cx="245" cy="108" r="4" fill="#818cf8" opacity="0.6"/>
+          <circle cx="42" cy="195" r="5" fill="#fbbf24" opacity="0.75"/>
+          <circle cx="72" cy="232" r="5" fill="#fbbf24" opacity="0.75"/>
+          <circle cx="110" cy="228" r="4" fill="#fbbf24" opacity="0.6"/>
+          <circle cx="205" cy="228" r="5" fill="#fbbf24" opacity="0.75"/>
+          <circle cx="270" cy="218" r="5" fill="#fbbf24" opacity="0.75"/>
+          <circle cx="262" cy="175" r="4" fill="#fbbf24" opacity="0.6"/>
+          <!-- Community hub nodes -->
+          <circle cx="90" cy="80" r="12" fill="#818cf8" opacity="0.9"/>
+          <circle cx="230" cy="78" r="12" fill="#818cf8" opacity="0.9"/>
+          <circle cx="78" cy="200" r="12" fill="#fbbf24" opacity="0.9"/>
+          <circle cx="235" cy="198" r="12" fill="#fbbf24" opacity="0.9"/>
+          <!-- Bridge node glow -->
+          <circle cx="160" cy="140" r="26" fill="#22d3ee" opacity="0.08"/>
+          <circle cx="160" cy="140" r="18" fill="#22d3ee" opacity="0.15"/>
+          <circle cx="160" cy="140" r="13" fill="#22d3ee" opacity="0.9"/>
+          <!-- Labels -->
+          <text x="90" y="54" text-anchor="middle" fill="#818cf8" font-size="9" font-family="Inter,sans-serif" font-weight="500" opacity="0.85">Community A</text>
+          <text x="230" y="54" text-anchor="middle" fill="#818cf8" font-size="9" font-family="Inter,sans-serif" font-weight="500" opacity="0.85">Community B</text>
+          <text x="78" y="248" text-anchor="middle" fill="#fbbf24" font-size="9" font-family="Inter,sans-serif" font-weight="500" opacity="0.85">Community C</text>
+          <text x="235" y="248" text-anchor="middle" fill="#fbbf24" font-size="9" font-family="Inter,sans-serif" font-weight="500" opacity="0.85">Community D</text>
+          <text x="160" y="170" text-anchor="middle" fill="#22d3ee" font-size="9" font-family="Inter,sans-serif" font-weight="600" opacity="0.9">bridge actor</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- Assignment Cards -->
+  <section class="py-20 px-6 border-t border-slate-800/60">
+    <div class="max-w-6xl mx-auto">
+      <h2 class="text-2xl font-bold mb-2 text-center">Explore the Analysis</h2>
+      <p class="text-slate-400 text-center mb-12 text-sm">Two-part assignment covering data collection through deep network and language analysis</p>
+      <div class="grid md:grid-cols-2 gap-8">
+
+        <!-- Part A -->
+        <a href="part-a.html" class="block bg-slate-800/50 border border-slate-700 rounded-2xl p-8 card-hover cursor-pointer hover:border-cyan-500/40 group">
+          <div class="flex items-center gap-3 mb-5">
+            <div class="badge bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Assignment A</div>
+          </div>
+          <h3 class="text-xl font-bold mb-3 group-hover:text-cyan-300 transition-colors">Data Collection &amp; Network Foundations</h3>
+          <p class="text-slate-400 text-sm leading-relaxed mb-6">
+            Dataset design, TMDB API pipeline, initial actor network construction, preliminary statistics, and text-to-network integration plan.
+          </p>
+          <ul class="space-y-2.5 text-sm text-slate-400 mb-6">
+            <li class="flex items-center gap-2.5">
+              <svg class="w-4 h-4 text-cyan-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              TMDB API data collection pipeline
+            </li>
+            <li class="flex items-center gap-2.5">
+              <svg class="w-4 h-4 text-cyan-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              Actor co-appearance weighted graph
+            </li>
+            <li class="flex items-center gap-2.5">
+              <svg class="w-4 h-4 text-cyan-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              Movie overview text preprocessing
+            </li>
+            <li class="flex items-center gap-2.5">
+              <svg class="w-4 h-4 text-cyan-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              Initial Louvain community detection
+            </li>
+          </ul>
+          <div class="flex items-center text-cyan-400 text-sm font-semibold group-hover:gap-2 gap-1.5 transition-all">
+            Explore Part A
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </div>
+        </a>
+
+        <!-- Part B -->
+        <a href="part-b.html" class="block bg-slate-800/50 border border-slate-700 rounded-2xl p-8 card-hover cursor-pointer hover:border-amber-500/40 group">
+          <div class="flex items-center gap-3 mb-5">
+            <div class="badge bg-amber-500/10 text-amber-400 border border-amber-500/20">Assignment B</div>
+          </div>
+          <h3 class="text-xl font-bold mb-3 group-hover:text-amber-300 transition-colors">Network Structure &amp; Community Language</h3>
+          <p class="text-slate-400 text-sm leading-relaxed mb-6">
+            Weighted centrality ranking, Louvain community detection with modularity, TF-IDF language profiling per community, and discussion of findings.
+          </p>
+          <ul class="space-y-2.5 text-sm text-slate-400 mb-6">
+            <li class="flex items-center gap-2.5">
+              <svg class="w-4 h-4 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              Degree, betweenness &amp; eigenvector centrality
+            </li>
+            <li class="flex items-center gap-2.5">
+              <svg class="w-4 h-4 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              Louvain community detection &amp; modularity
+            </li>
+            <li class="flex items-center gap-2.5">
+              <svg class="w-4 h-4 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              TF-IDF community language profiling
+            </li>
+            <li class="flex items-center gap-2.5">
+              <svg class="w-4 h-4 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              Heavy-tail degree distribution analysis
+            </li>
+          </ul>
+          <div class="flex items-center text-amber-400 text-sm font-semibold group-hover:gap-2 gap-1.5 transition-all">
+            Explore Part B
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800 py-10 px-6 mt-4">
+    <div class="max-w-6xl mx-auto text-center text-slate-500 text-sm">
+      <p class="mb-2">Computational Social Science Project &nbsp;·&nbsp; 2026</p>
+      <p>Data provided by <a href="https://www.themoviedb.org/" target="_blank" rel="noopener" class="text-cyan-500 hover:text-cyan-400 transition-colors cursor-pointer">The Movie Database (TMDB)</a>.</p>
+      <p class="mt-1 italic text-slate-600">This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+    </div>
+  </footer>
+
+  <script>
+    const canvas = document.getElementById('networkCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const nodeCount = Math.min(90, Math.floor((window.innerWidth * window.innerHeight) / 9000));
+    const nodes = Array.from({ length: nodeCount }, () => ({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      vx: (Math.random() - 0.5) * 0.35,
+      vy: (Math.random() - 0.5) * 0.35,
+      r: Math.random() * 2.2 + 0.5,
+      type: Math.random() > 0.7 ? 'amber' : Math.random() > 0.4 ? 'indigo' : 'cyan',
+    }));
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      nodes.forEach(n => {
+        n.x += n.vx;
+        n.y += n.vy;
+        if (n.x < 0 || n.x > canvas.width) n.vx *= -1;
+        if (n.y < 0 || n.y > canvas.height) n.vy *= -1;
+      });
+
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x;
+          const dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 140) {
+            ctx.beginPath();
+            ctx.moveTo(nodes[i].x, nodes[i].y);
+            ctx.lineTo(nodes[j].x, nodes[j].y);
+            ctx.strokeStyle = `rgba(34, 211, 238, ${0.10 * (1 - dist / 140)})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+
+      nodes.forEach(n => {
+        const colors = { cyan: '34,211,238', indigo: '129,140,248', amber: '251,191,36' };
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${colors[n.type]}, 0.65)`;
+        ctx.fill();
+      });
+
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  </script>
+</body>
 </html>

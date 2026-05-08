@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(python \"C:\\\\Users\\\\olive\\\\.claude\\\\skills\\\\ui-ux-pro-max\\\\scripts\\\\search.py\" \"academic data science research network analysis visualization\" --design-system -p \"TMDB Actor Analysis\")",
+      "PowerShell(python3 \"C:\\\\Users\\\\olive\\\\.claude\\\\skills\\\\ui-ux-pro-max\\\\scripts\\\\search.py\" \"academic data science research network analysis visualization\" --design-system -p \"TMDB Actor Analysis\" 2>&1)",
+      "PowerShell(uv run *)",
+      "PowerShell(npm *)"
+    ]
+  }
+}
